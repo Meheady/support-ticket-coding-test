@@ -16,6 +16,9 @@
                 <li class="list-group-item list-group-item-action {{ areActiveRoutes(['admin.settings']) }}">
                     <a class="nav-link" href="{{ route('admin.settings') }}">Settings</a>
                 </li>
+                <li class="list-group-item list-group-item-action {{ areActiveRoutes(['admin.list','admin.create']) }}">
+                    <a class="nav-link" href="{{ route('admin.list') }}">Admin User</a>
+                </li>
             </ul>
         </div>
     </div>

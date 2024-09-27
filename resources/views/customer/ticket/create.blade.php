@@ -4,6 +4,11 @@
     <div class="container">
         <h2>Create a New Support Ticket</h2>
 
+
+        @if(session('success'))
+            <div class="alert alert-success my-2 p-2">{{ session('success') }}</div>
+        @endif
+
         <form action="{{ route('customer.tickets.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 

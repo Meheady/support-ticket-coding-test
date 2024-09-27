@@ -29,6 +29,10 @@
             </div>
         @endforeach
 
+        @if(session('success'))
+            <div class="alert alert-success my-2 p-2">{{ session('success') }}</div>
+        @endif
+
         <form action="{{ route('admin.tickets.reply', $ticket->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="form-group">

@@ -12,18 +12,42 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\Cache;
 class TicketController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tickets = Ticket::latest();
-        if (Route::currentRouteName() == 'customer.tickets') {
-            $tickets = $tickets->where('user_id', Auth::id())->get();
-            return view('customer.ticket.view-all', compact('tickets'));
-        } elseif (Route::currentRouteName() == 'admin.tickets') {
-            $tickets = $tickets->get();
-            return view('admin.ticket.view-all', compact('tickets'));
+        $status = $request->get('status');
+        $departmentId = $request->get('department_id');
+
+        $userId = Auth::id();
+        $routeName = Route::currentRouteName();
+        $cacheKey = 'tickets_cache_' . $status . '_' . $departmentId . '_' . $routeName . '_' . $userId;
+
+        $departments = Cache::remember('departments', 600, function () {
+            return Department::where('status', 1)->get();
+        });
+
+        $tickets = Cache::remember($cacheKey, 86400, function () use ($status, $departmentId, $routeName, $userId) {
+            $query = Ticket::latest();
+
+            if ($status) {
+                $query->where('status', $status);
+            }
+            if ($departmentId) {
+                $query->where('department_id', $departmentId);
+            }
+            if ($routeName == 'customer.tickets') {
+                $query->where('user_id', $userId);
+            }
+
+            return $query->get();
+        });
+
+        if ($routeName == 'customer.tickets') {
+            return view('customer.ticket.view-all', compact('tickets', 'departments'));
+        } elseif ($routeName == 'admin.tickets') {
+            return view('admin.ticket.view-all', compact('tickets', 'departments'));
         }
     }
 

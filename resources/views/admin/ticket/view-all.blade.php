@@ -2,6 +2,37 @@
 @section('content')
     <div>
         <h6>All Opened Ticket </h6>
+        <form method="GET" action="{{ route('admin.tickets') }}">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="status">Status</label>
+                    <select class="form-control" name="status">
+                        <option value="">All</option>
+                        <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>Open</option>
+                        <option value="reply" {{ request('status') == 'reply' ? 'selected' : '' }}>Reply</option>
+                        <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Closed</option>
+                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="department_id">Department</label>
+                    <select class="form-control" name="department_id">
+                        <option value="">All</option>
+                        @foreach ($departments as $department)
+                            <option value="{{ $department->id }}" {{ request('department_id') == $department->id ? 'selected' : '' }}>
+                                {{ $department->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-3 align-self-end">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="{{ route('admin.tickets') }}" class="btn btn-primary">Reset</a>
+                </div>
+            </div>
+        </form>
         <table class="table mt-3 table-striped ">
             <thead>
             <tr>
