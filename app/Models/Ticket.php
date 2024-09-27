@@ -10,6 +10,39 @@ class Ticket extends Model
     use HasFactory;
     protected $guarded = [];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function replies()
+    {
+        return $this->hasMany(TicketResponse::class);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     const STATUS_OPEN = 'open';
     const STATUS_CLOSED = 'closed';
     const STATUS_REPLY = 'reply';

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('ticket_id');
             $table->integer('user_id');
             $table->longText('response');
-            $table->text('attachment');
+            $table->text('attachment')->nullable();
             $table->timestamps();
         });
     }
