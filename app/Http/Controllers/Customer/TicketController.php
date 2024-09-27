@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\Ticket;
+use App\Models\User;
+use App\Notifications\SupportTicketOpenedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
@@ -17,10 +20,10 @@ class TicketController extends Controller
         $tickets = Ticket::latest();
         if (Route::currentRouteName() == 'customer.tickets') {
             $tickets = $tickets->where('user_id', Auth::id())->get();
-            return view('customer.ticket.view-all',compact('tickets'));
-        }elseif (Route::currentRouteName() == 'admin.tickets') {
-           $tickets = $tickets->get();
-            return view('admin.ticket.view-all',compact('tickets'));
+            return view('customer.ticket.view-all', compact('tickets'));
+        } elseif (Route::currentRouteName() == 'admin.tickets') {
+            $tickets = $tickets->get();
+            return view('admin.ticket.view-all', compact('tickets'));
         }
     }
 
@@ -34,7 +37,13 @@ class TicketController extends Controller
     public function viewTicket($id)
     {
         $ticket = Ticket::findOrFail($id);
-        return view('customer.ticket.view-ticket', compact('ticket'));
+        auth()->user()->unreadNotifications->where('data.ticket_id', $id)
+            ->markAsRead();
+        if (Route::currentRouteName() == 'admin.tickets.view') {
+            return view('admin.ticket.view-ticket', compact('ticket'));
+        } else {
+            return view('customer.ticket.view-ticket', compact('ticket'));
+        }
     }
 
     public function storeTicket(Request $request)
@@ -53,12 +62,12 @@ class TicketController extends Controller
             $imagePath = "";
             if ($request->hasFile('attachment')) {
                 $filePath = $request->file('attachment')->store('ticket_attachment', 'public');
-                $imagePath = 'storage/'.$filePath;
+                $imagePath = 'storage/' . $filePath;
             }
             $ticket = Ticket::create([
                 'user_id' => auth()->id(),
                 'department_id' => $request->department_id,
-                'ticket_no' => rand(100000,999999),
+                'ticket_no' => rand(100000, 999999),
                 'subject' => $request->subject,
                 'description' => $request->description,
                 'attachment' => $imagePath,
@@ -66,11 +75,14 @@ class TicketController extends Controller
                 'status' => Ticket::STATUS_OPEN,
             ]);
 
+            $admins = User::where('type', 'admin')->get();
+
+            Notification::send($admins, new SupportTicketOpenedNotification($ticket));
+
             return redirect()->route('customer.tickets.view', $ticket->id)
                 ->with('success', 'Your ticket has been created successfully.');
-        }
-        catch (\Exception $e) {
-            return redirect()->route('customer.tickets.create');
+        } catch (\Exception $e) {
+            return $e->getMessage();
         }
     }
 }

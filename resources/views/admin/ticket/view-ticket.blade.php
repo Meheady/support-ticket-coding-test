@@ -9,6 +9,9 @@
                 <p><strong>Subject:</strong> {{ $ticket->subject }}</p>
                 <p><strong>Status:</strong>  {{ ucfirst($ticket->status) }}</p>
                 <p><strong>Description:</strong> {{ $ticket->description }}</p>
+                @if($ticket->attachment)
+                    <a href="{{ asset($ticket->attachment) }}" class="btn btn-secondary" target="_blank">Attachment</a>
+                @endif
             </div>
         </div>
 
@@ -19,11 +22,14 @@
                 <div class="card-body">
                     <p><strong>{{ $reply->user->name }}:</strong></p>
                     <p>{{ $reply->response }}</p>
+                    @if($reply->attachment)
+                        <a href="{{ asset($reply->attachment) }}" class="btn btn-info" target="_blank">Attachment</a>
+                    @endif
                 </div>
             </div>
         @endforeach
 
-        <form action="{{ route('admin.tickets.reply', $ticket->id) }}" method="POST">
+        <form action="{{ route('admin.tickets.reply', $ticket->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="form-group">
                 <label class="py-2" >Your Reply</label>

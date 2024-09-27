@@ -10,7 +10,7 @@
                     <a class="nav-link" href="{{ route('customer.tickets.create') }}">Open Ticket</a>
                 </li>
                 <li class="list-group-item list-group-item-action {{ areActiveRoutes(['customer.tickets','customer.tickets.view']) }}">
-                    <a class="nav-link" href="{{ route('customer.tickets') }}">Ticket List</a>
+                    <a class="nav-link" href="{{ route('customer.tickets') }}">Ticket List  <span style="background-color: blue" class="badge badge-success">{{ $unreadTicketReplyNotifications }}</span></a>
                 </li>
             </ul>
         </div>

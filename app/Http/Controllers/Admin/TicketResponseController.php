@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
 use App\Models\TicketResponse;
+use App\Models\User;
+use App\Notifications\SupportTicketReplyNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class TicketResponseController extends Controller
 {
@@ -23,7 +26,7 @@ class TicketResponseController extends Controller
             $imagePath = 'storage/'.$filePath;
         }
 
-        TicketResponse::create([
+        $reply = TicketResponse::create([
             'ticket_id' => $ticket->id,
             'user_id' => auth()->id(),
             'response' => $request->response,
@@ -36,7 +39,15 @@ class TicketResponseController extends Controller
             $ticketStatus = request('status');
         }
 
-        $ticket->update(['status' => Ticket::STATUS_REPLY]);
+        if (auth()->user()->type == 'admin') {
+            $ticket->user->notify(new SupportTicketReplyNotification($ticket, $reply));
+        } else {
+            $admins = User::where('type', 'admin')->get();
+
+            Notification::send($admins, new SupportTicketReplyNotification($ticket, $reply));
+        }
+
+        $ticket->update(['status' => $ticketStatus]);
         return redirect()->back()->with('success', 'Your reply has been sent.');
     }
 
